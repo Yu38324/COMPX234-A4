@@ -6,7 +6,6 @@ import java.net.SocketTimeoutException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.Base64;
 
 public class Client {
@@ -27,22 +26,22 @@ public class Client {
         return "DOWNLOAD<" + filename + ">";
     }
 
-    private synchronized void downloadFile(String file, String destination) throws IOException {
-     // Check if source file exists
-    Path sourcePath = Paths.get(file);
-    if (!Files.exists(sourcePath)) {
-        throw new FileNotFoundException("Source file not found: " + file);
-    }
+    // private synchronized void downloadFile(String file, String destination) throws IOException {
+    //  // Check if source file exists
+    // Path sourcePath = Paths.get(file);
+    // if (!Files.exists(sourcePath)) {
+    //     throw new FileNotFoundException("Source file not found: " + file);
+    // }
 
-    // Create destination directory if it doesn't exist
-    Path destPath = Paths.get(destination);
-    Files.createDirectories(destPath.getParent());
+    // // Create destination directory if it doesn't exist
+    // Path destPath = Paths.get(destination);
+    // Files.createDirectories(destPath.getParent());
 
-    // Copy the file
-    Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
-    System.out.println("File downloaded from " + file + " to " + destination);
+    // // Copy the file
+    // Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
+    // System.out.println("File downloaded from " + file + " to " + destination);
 
-    }
+    // }
 
     //client timeouts and retransmits the request
     private String sendAndReceive(DatagramSocket socket, String message, InetAddress address, int port)throws IOException {
