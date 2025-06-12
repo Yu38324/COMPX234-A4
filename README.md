@@ -42,3 +42,18 @@ I have searched and changed run() function.
 (Server)server_Request()  is finished.  
 And static main().
 downloadFile()?
+
+##  
+6/12 23:32
+Server started on port 51234
+Exception in thread "main" java.lang.NoClassDefFoundError: Server$ClientHandler
+        at Server.startServer(Server.java:164)
+        at Server.main(Server.java:199)
+Caused by: java.lang.ClassNotFoundException: Server$ClientHandler
+        at java.base/jdk.internal.loader.BuiltinClassLoader.loadClass(BuiltinClassLoader.java:641)
+        at java.base/jdk.internal.loader.ClassLoaders$AppClassLoader.loadClass(ClassLoaders.java:188)
+        at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:528)
+        ... 2 more
+
+compiled wrong.
+re-compile and run again.
