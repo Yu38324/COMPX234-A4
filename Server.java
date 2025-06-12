@@ -1,10 +1,10 @@
 import java.io.*;
 import java.net.*;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Base64;
-import java.nio.file.Files;
 
 
 public class Server {
@@ -143,18 +143,66 @@ public class Server {
     }
 
     void startServer(int port){
+        try (DatagramSocket serverSocket = new DatagramSocket(port)) {
+            System.out.println("Server started on port " + port);
+            
+            while (true) {
+                byte[] receiveData = new byte[1024];
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                serverSocket.receive(receivePacket);
+                
+                String request = new String(receivePacket.getData(), 0, receivePacket.getLength());
+                if (request.startsWith("DOWNLOAD<")) {
+                    // analize filename
+                    String filename = request.substring(9, request.length() - 1);
+                    File file = new File(filename);
+                    String response;
+                    if (file.exists()) {
+                        int dataPort = findFreePort();
+                        response = fR(filename, file.length(), dataPort);
+
+                        new Thread(new ClientHandler(
+                            filename,
+                            receivePacket.getAddress(),
+                            receivePacket.getPort()
+                        )).start();
+                    } else {
+                        response = fE(filename);
+                    }
+                    // send response
+                    byte[] sendData = response.getBytes();
+                    DatagramPacket sendPacket = new DatagramPacket(
+                        sendData, 
+                        sendData.length,
+                        receivePacket.getAddress(),
+                        receivePacket.getPort()
+                    );
+                    serverSocket.send(sendPacket);
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+                    
 
 
 
     }
 
     public static void main(String[] args) {
+        if (args.length < 1) {
+            System.out.println("Usage: java Server <port>");
+            return;
+        }
         
+        int port = Integer.parseInt(args[0]);
+        new Server().startServer(port);
+    
 
 
     }
     }
-}
-
+// 
+ 
 
 
