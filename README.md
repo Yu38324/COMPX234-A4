@@ -25,4 +25,10 @@ if respond is lost, then the client timeouts and retransmits the DOWNLOAD reques
 6/12 20:02  
 (Server)specify run(),add findFreePort() function.  
 Client has downloadFile() method which promisses that only one file is downloaded at a time for one client.  
-then do Server need downloadFile() method?
+then do Server need downloadFile() method?  
+
+##
+6/12 20:20  
+ port number (in the range 50000-51000) 
+(Sever) I have make wrong with the BufferedReader and PrintWriter(These are for TCP). In UDP the BufferedReader and PrintWriter are not used.And socket is DatagramSocket.  
+I have searched and changed run() function.

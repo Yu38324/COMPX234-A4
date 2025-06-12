@@ -4,6 +4,9 @@ public class Client {
     private String host;
     private int port;
     private String filename;
+    private static final int MAX_RETRIES = 5;
+    private static final int BASE_TIMEOUT = 1000;
+    private static final int MAX_BLOCK_SIZE = 1000;
 
     public Client(String host, int port, String filename) {
         this.host = host;
@@ -18,7 +21,7 @@ public class Client {
     //client timeouts and retransmits the request
     private void sendAndReceive(){
         //transmit a packet,set timeout, retransmit if no response
-        
+
 
     }
     
