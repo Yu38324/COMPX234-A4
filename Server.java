@@ -114,12 +114,7 @@ public class Server {
                             break;
                         }
                     }
-                
-
-
-                    }
-
-
+                } 
 
                 // if (command.equals("DOWNLOAD")) {
                 //     // Check if the file exists

@@ -1,4 +1,8 @@
 import java.io.*;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketTimeoutException;
 
 public class Client {
     private String host;
@@ -19,10 +23,32 @@ public class Client {
     }
 
     //client timeouts and retransmits the request
-    private void sendAndReceive(){
+    private String sendAndReceive(DatagramSocket socket, String message, InetAddress address, int port)throws IOException {
         //transmit a packet,set timeout, retransmit if no response
+        byte[] sendData = message.getBytes();
+        byte[] receiveData = new byte[2048]; 
+        int retries = 0;
+        int currentTimeout = BASE_TIMEOUT;
+        while (retries < MAX_RETRIES) {
+            try {
+                //send request
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, port);
+                socket.send(sendPacket);
+                //set timeout
+                socket.setSoTimeout(currentTimeout);
+                //receive response
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                socket.receive(receivePacket);
+                //return response
+                return new String(receivePacket.getData(),0, receivePacket.getLength());
 
-
+            } catch (Exception e) {
+                //increment retries and timeout
+                retries++;
+                currentTimeout *= 2;
+            }
+        }
+        throw new SocketTimeoutException("Max retries exceeded");
     }
     
     public void client_Request(){
