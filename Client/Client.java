@@ -143,7 +143,7 @@ public class Client {
     public void client_Request(){
         try {
             // read filelist
-            List<String> filesToDownload = Files.readAllLines(Paths.get(fileListName));
+            List<String> filesToDownload = Files.readAllLines(Paths.get(fileListname));
             
             for (String filename : filesToDownload) {
                 filename = filename.trim();
