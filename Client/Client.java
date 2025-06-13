@@ -7,11 +7,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List;
 
 public class Client {
     private String host;
     private int port;
-    private String filename;
+    private String fileListname;
     private static final int MAX_RETRIES = 5;
     private static final int BASE_TIMEOUT = 1000;
     private static final int MAX_BLOCK_SIZE = 1000;
@@ -19,65 +20,19 @@ public class Client {
     public Client(String host, int port, String filename) {
         this.host = host;
         this.port = port;
-        this.filename = filename;
+        this.fileListname = fileListname;
     }
     //format request: DOWNLOAD<filename>
-    private String fR() {
+    private String fR(String filename) {
         return "DOWNLOAD<" + filename + ">";
     }
 
-    // private synchronized void downloadFile(String file, String destination) throws IOException {
-    //  // Check if source file exists
-    // Path sourcePath = Paths.get(file);
-    // if (!Files.exists(sourcePath)) {
-    //     throw new FileNotFoundException("Source file not found: " + file);
-    // }
-
-    // // Create destination directory if it doesn't exist
-    // Path destPath = Paths.get(destination);
-    // Files.createDirectories(destPath.getParent());
-
-    // // Copy the file
-    // Files.copy(sourcePath, destPath, StandardCopyOption.REPLACE_EXISTING);
-    // System.out.println("File downloaded from " + file + " to " + destination);
-
-    // }
-
-    //client timeouts and retransmits the request
-    private String sendAndReceive(DatagramSocket socket, String message, InetAddress address, int port)throws IOException {
-        //transmit a packet,set timeout, retransmit if no response
-        byte[] sendData = message.getBytes();
-        byte[] receiveData = new byte[2048]; 
-        int retries = 0;
-        int currentTimeout = BASE_TIMEOUT;
-        while (retries < MAX_RETRIES) {
-            try {
-                //send request
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, port);
-                socket.send(sendPacket);
-                //set timeout
-                socket.setSoTimeout(currentTimeout);
-                //receive response
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                socket.receive(receivePacket);
-                //return response
-                return new String(receivePacket.getData(),0, receivePacket.getLength());
-
-            } catch (Exception e) {
-                //increment retries and timeout
-                retries++;
-                currentTimeout *= 2;
-            }
-        }
-        throw new SocketTimeoutException("Max retries exceeded");
-    }
-    
-    public void client_Request(){
+    private synchronized void downloadFile(String filename) throws IOException {
         try (DatagramSocket socket = new DatagramSocket()) {
             InetAddress ipAddress = InetAddress.getByName(host);
             
             // send download request
-            String response = sendAndReceive(socket, fR(), ipAddress, port);
+            String response = sendAndReceive(socket, fR(filename), ipAddress, port);
             
             if (response.startsWith("ERR")) {
                 System.out.println("Error: " + response);
@@ -86,13 +41,13 @@ public class Client {
             
             // analize OK: OK<filename>SIZE<size>PORT<port>
             String[] parts = response.split("<|>");
-            String filename = parts[1];
+            String receivedFilename = parts[1];
             long fileSize = Long.parseLong(parts[3]);
             int dataPort = Integer.parseInt(parts[5]);
-            System.out.println("Downloading " + filename + " (" + fileSize + " bytes)");
+            System.out.println("Downloading " + receivedFilename + " (" + fileSize + " bytes)");
             
             // create file
-            Path filePath = Paths.get(filename);
+            Path filePath = Paths.get(receivedFilename);
             try (OutputStream fos = Files.newOutputStream(filePath)) {
                 long bytesReceived = 0;
                 int blockCount = 0;
@@ -153,6 +108,53 @@ public class Client {
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    //client timeouts and retransmits the request
+    private String sendAndReceive(DatagramSocket socket, String message, InetAddress address, int port)throws IOException {
+        //transmit a packet,set timeout, retransmit if no response
+        byte[] sendData = message.getBytes();
+        byte[] receiveData = new byte[2048]; 
+        int retries = 0;
+        int currentTimeout = BASE_TIMEOUT;
+        while (retries < MAX_RETRIES) {
+            try {
+                //send request
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, address, port);
+                socket.send(sendPacket);
+                //set timeout
+                socket.setSoTimeout(currentTimeout);
+                //receive response
+                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+                socket.receive(receivePacket);
+                //return response
+                return new String(receivePacket.getData(),0, receivePacket.getLength());
+
+            } catch (Exception e) {
+                //increment retries and timeout
+                retries++;
+                currentTimeout *= 2;
+            }
+        }
+        throw new SocketTimeoutException("Max retries exceeded");
+    }
+    
+    public void client_Request(){
+        try {
+            // read filelist
+            List<String> filesToDownload = Files.readAllLines(Paths.get(fileListName));
+            
+            for (String filename : filesToDownload) {
+                filename = filename.trim();
+                if (!filename.isEmpty()) {
+                    System.out.println("\nStarting download: " + filename);
+                    downloadFile(filename);
+                }
+            }
+            System.out.println("\nAll files downloaded!");
+        } catch (IOException e) {
+            System.err.println("Error reading file list: " + e.getMessage());
         }
                 
     }

@@ -56,4 +56,10 @@ Caused by: java.lang.ClassNotFoundException: Server$ClientHandler
         ... 2 more
 
 compiled wrong.
-re-compile and run again.
+re-compile and run again.  
+ 
+## 
+6/13 7:54
+support file list
+(Client)rewrited downloadFile(),client_Request(). 
+And added files.txt (which contains test.txt and test2.txt)to Client file.
