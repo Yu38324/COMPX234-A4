@@ -20,7 +20,7 @@ public class Client {
     public Client(String host, int port, String filename) {
         this.host = host;
         this.port = port;
-        this.fileListname = fileListname;
+        this.fileListname = filename;
     }
     //format request: DOWNLOAD<filename>
     private String fR(String filename) {

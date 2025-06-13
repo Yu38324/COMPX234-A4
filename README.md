@@ -62,4 +62,7 @@ re-compile and run again.
 6/13 7:54
 support file list
 (Client)rewrited downloadFile(),client_Request(). 
-And added files.txt (which contains test.txt and test2.txt)to Client file.
+And added files.txt (which contains test.txt and test2.txt)to Client file.  
+rewrited findFreePort().(UDP)
+
+re-compile and run again.

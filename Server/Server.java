@@ -28,16 +28,12 @@ public class Server {
 
     // }
     private int findFreePort() {
-        for (int port = MIN_PORT; port <= MAX_PORT; port++) {
-            try (ServerSocket serverSocket = new ServerSocket(port)) {
-                return port;
-            } catch (IOException e) {
-                // Port is already in use, try the next one
-            }
+        try (DatagramSocket socket = new DatagramSocket(0)) {
+            return socket.getLocalPort();
+        } catch (IOException e) {
+            return -1;
         }
-        return -1; // No free port found
-    }
-
+}
     // muiltithreaded server
     class ClientHandler implements Runnable {
         private final String filename;
@@ -78,28 +74,31 @@ public class Server {
                             int length = (int) (end - start + 1);
                             
                             // file block
-                            fis.skipNBytes(start);
-                            int bytesRead = fis.read(buffer, 0, length);
-                            
-                            // Base64 encode
-                            String base64Data = Base64.getEncoder().encodeToString(
-                                Arrays.copyOf(buffer, bytesRead)
-                            );
-                            
-                            // send response
-                            String response = "FILE<" + filename + ">OK<START<" + start + 
-                                ">END<" + end + ">DATA<" + base64Data + ">>";
-                            byte[] sendData = response.getBytes();
-                            
-                            DatagramPacket sendPacket = new DatagramPacket(
-                                sendData, 
-                                sendData.length, 
-                                clientAddress, 
-                                clientPort
-                            );
-                            dataSocket.send(sendPacket);
-                        } 
-                        else if (parts[0].equals("FILE") && parts[2].equals("CLOSE")) {
+                            // fis.skipNBytes(start);
+                            // int bytesRead = fis.read(buffer, 0, length);
+                            try (RandomAccessFile raf = new RandomAccessFile(filePath.toFile(), "r")) {
+                                raf.seek(start);
+                                int bytesRead = raf.read(buffer, 0, length);
+                                
+                                // Base64 encode
+                                String base64Data = Base64.getEncoder().encodeToString(
+                                    Arrays.copyOf(buffer, bytesRead)
+                                );
+                                
+                                // send response
+                                String response = "FILE<" + filename + ">OK<START<" + start + 
+                                    ">END<" + end + ">DATA<" + base64Data + ">>";
+                                byte[] sendData = response.getBytes();
+                                
+                                DatagramPacket sendPacket = new DatagramPacket(
+                                    sendData, 
+                                    sendData.length, 
+                                    clientAddress, 
+                                    clientPort
+                                );
+                                dataSocket.send(sendPacket);
+                            }
+                        } else if (parts[0].equals("FILE") && parts[2].equals("CLOSE")) {
                             // send close response
                             String closeResponse = "FILE<" + filename + ">CLOSE_OK";
                             byte[] sendData = closeResponse.getBytes();
