@@ -66,3 +66,23 @@ And added files.txt (which contains test.txt and test2.txt)to Client file.
 rewrited findFreePort().(UDP)
 
 re-compile and run again.
+
+## 
+6/13 12：56
+Starting download: test1.txt
+Downloading test1.txt (4 bytes)
+java.net.SocketTimeoutException: Max retries exceeded
+        at Client.sendAndReceive(Client.java:140)
+        at Client.downloadFile(Client.java:62)
+        at Client.client_Request(Client.java:152)
+        at Client.main(Client.java:175)
+
+Starting download: test2.txt
+Downloading test2.txt (14 bytes)
+java.net.SocketTimeoutException: Max retries exceeded
+        at Client.sendAndReceive(Client.java:140)
+        at Client.downloadFile(Client.java:62)
+        at Client.client_Request(Client.java:152)
+        at Client.main(Client.java:175)
+
+All files downloaded!
